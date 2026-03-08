@@ -95,7 +95,7 @@ module CPEE
           @status = 409
           return Riddl::Parameter::Complex.new('error','text/plain','Endpoint already exists.')
         end
-        FileUtils.mkdir_p(dir)
+        Dir.mkdir(dir)
         File.symlink(File.join(data,'symbols','timeout.svg'),  File.join(dir,'symbol.svg'))
         File.symlink(File.join(data,'schemas','timeout.rng'),  File.join(dir,'schema.rng'))
         @status = 201

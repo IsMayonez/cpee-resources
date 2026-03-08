@@ -170,7 +170,7 @@
       <get out="list"/>
       <resource>
         <get out="exists"/>
-        <post in="filedata" out="created"/>
+        <post out="created"/>
         <resource relative="symbol.svg">
           <get out="symbol"/>
           <put in="filedata" out="updated"/>
