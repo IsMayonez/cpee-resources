@@ -137,7 +137,11 @@
     <parameter name="error" mimetype="text/plain"/>
   </message>
   <message name="filedata">
-    <parameter name="data" mimetype="*/*"/>
+    <choice>
+      <parameter name="data" mimetype="image/svg+xml"/>
+      <parameter name="data" mimetype="*/xml"/>
+      <parameter name="data" mimetype="text/plain"/>
+    </choice>
   </message>
 
   <resource>
