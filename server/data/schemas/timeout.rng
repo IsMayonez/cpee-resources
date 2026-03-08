@@ -1,0 +1,13 @@
+<element rngui:version="1.2" rngui:header="Arguments" name="arguments" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0" xmlns:rngui="http://rngui.org">
+  <element name="timeout" rngui:label="Duration">
+    <data type="float" rngui:label="duration in seconds"/>
+  </element>
+  <element name="data" rngui:header="Data">
+    <zeroOrMore rngui:label="New Data Element">
+      <element rngui:label="Name">
+        <anyName/>
+        <data type="string" rngui:label="Value"/>
+      </element>
+    </zeroOrMore>
+  </element>
+</element>
