@@ -138,9 +138,11 @@ module CPEE
           @status = 400
           return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
         end
-        File.write(file, payload.value)
+        content = payload.value
+        content = content.read if content.respond_to?(:read)
+        File.write(file, content)
         @status = 201
-        Riddl::Parameter::Complex.new('created','text/plain','OK')
+        Riddl::Parameter::Complex.new('created','text/xml','<created/>')
       end
     end #}}}
     class DoUpdateFile < Riddl::Implementation #{{{
@@ -156,7 +158,9 @@ module CPEE
           @status = 400
           return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
         end
-        File.write(file, payload.value)
+        content = payload.value
+        content = content.read if content.respond_to?(:read)
+        File.write(file, content)
         Riddl::Parameter::Complex.new('updated','text/plain','OK')
       end
     end #}}}
