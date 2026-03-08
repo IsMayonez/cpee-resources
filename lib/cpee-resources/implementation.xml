@@ -14,7 +14,7 @@
   You should have received a copy of the GNU Lesser General Public License
   along with CPEE-RESOURCES (file LICENSE in the main directory). If not, see
   <http://www.gnu.org/licenses/>.
--->
+
 
 <description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <message name="list">
@@ -52,6 +52,95 @@
   </message>
 
   <resource>
+    <resource relative='modifiers'> 
+      <get out="list"/>
+      <resource>
+        <get out="list"/>
+        <resource>
+          <get out="exists"/>
+          <resource relative="patch.xml">
+            <get out="testset"/>
+          </resource>
+          <resource relative="unpatch.xml">
+            <get out="testset"/>
+          </resource>
+          <resource relative="condition.json">
+            <get out="json"/>
+          </resource>
+          <resource relative="ui.rng">
+            <get out="schema"/>
+          </resource>
+        </resource>
+      </resource>
+    </resource> 
+    <resource relative='endpoints'>
+      <get out="list"/>
+      <resource>
+        <get out="exists"/>
+        <resource relative="symbol.svg">
+          <get out="symbol"/>
+        </resource>
+        <resource relative="schema.rng">
+          <get out="schema"/>
+          <put in="schema"/>
+        </resource>
+        <resource relative="properties.json">
+          <get out="json"/>
+        </resource>
+      </resource>
+    </resource>
+  </resource>
+</description>
+-->
+
+<description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <message name="list">
+    <parameter name="list" mimetype="*/xml"/>
+  </message>
+  <message name="exists">
+    <choice>
+      <parameter name="exists" mimetype="*/xml"/>
+      <parameter name="exists" mimetype="text/plain"/>
+    </choice>
+  </message>
+  <message name="testset">
+    <choice>
+      <parameter name="testset" mimetype="*/xml"/>
+      <parameter name="exists" mimetype="text/plain"/>
+    </choice>
+  </message>
+  <message name="symbol">
+    <choice>
+      <parameter name="svg" mimetype="image/svg+xml"/>
+      <parameter name="exists" mimetype="text/plain"/>
+    </choice>
+  </message>
+  <message name="schema">
+    <choice>
+      <parameter name="rng" mimetype="*/xml"/>
+      <parameter name="exists" mimetype="text/plain"/>
+    </choice>
+  </message>
+  <message name="json">
+    <choice>
+      <parameter name="json" mimetype="application/json"/>
+      <parameter name="exists" mimetype="text/plain"/>
+    </choice>
+  </message>
+  <message name="created">
+    <parameter name="created" mimetype="*/xml"/>
+  </message>
+  <message name="updated">
+    <parameter name="updated" mimetype="text/plain"/>
+  </message>
+  <message name="error">
+    <parameter name="error" mimetype="text/plain"/>
+  </message>
+  <message name="filedata">
+    <parameter name="data" mimetype="text/plain"/>
+  </message>
+
+  <resource>
     <resource relative='modifiers'> <!--{{{-->
       <get out="list"/>
       <resource>
@@ -77,16 +166,34 @@
       <get out="list"/>
       <resource>
         <get out="exists"/>
+        <post in="filedata" out="created"/>
         <resource relative="symbol.svg">
           <get out="symbol"/>
+          <put in="filedata" out="updated"/>
         </resource>
         <resource relative="schema.rng">
           <get out="schema"/>
-          <put in="schema"/>
+          <put in="filedata" out="updated"/>
         </resource>
         <resource relative="properties.json">
           <get out="json"/>
         </resource>
+      </resource>
+    </resource>
+    <resource relative='symbols'>
+      <get out="list"/>
+      <resource>
+        <get out="symbol"/>
+        <post in="filedata" out="created"/>
+        <put in="filedata" out="updated"/>
+      </resource>
+    </resource>
+    <resource relative='schemas'>
+      <get out="list"/>
+      <resource>
+        <get out="schema"/>
+        <post in="filedata" out="created"/>
+        <put in="filedata" out="updated"/>
       </resource>
     </resource>
   </resource>
