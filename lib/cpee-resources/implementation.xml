@@ -188,16 +188,16 @@
       <get out="list"/>
       <resource>
         <get out="symbol"/>
-        <post in="filedata" out="created"/>
-        <put in="filedata" out="updated"/>
+        <post out="created"/>
+        <put out="updated"/>
       </resource>
     </resource>
     <resource relative='schemas'>
       <get out="list"/>
       <resource>
         <get out="schema"/>
-        <post in="filedata" out="created"/>
-        <put in="filedata" out="updated"/>
+        <post out="created"/>
+        <put out="updated"/>
       </resource>
     </resource>
   </resource>
