@@ -137,7 +137,7 @@
     <parameter name="error" mimetype="text/plain"/>
   </message>
   <message name="filedata">
-    <parameter name="data" mimetype="text/plain"/>
+    <parameter name="data" mimetype="*/*"/>
   </message>
 
   <resource>

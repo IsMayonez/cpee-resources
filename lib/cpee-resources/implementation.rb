@@ -133,7 +133,7 @@ module CPEE
           @status = 409
           return Riddl::Parameter::Complex.new('error','text/plain','File already exists.')
         end
-        payload = @p.find { |p| p.name == 'data' }
+        payload = @p.find { |p| p.name == 'data' } || @p[0]
         if payload.nil?
           @status = 400
           return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
@@ -151,7 +151,7 @@ module CPEE
           @status = 404
           return Riddl::Parameter::Complex.new('error','text/plain','Existence really is an imperfect tense that never becomes a present. (Friedrich Nietzsche)')
         end
-        payload = @p.find { |p| p.name == 'data' }
+        payload = @p.find { |p| p.name == 'data' } || @p[0]
         if payload.nil?
           @status = 400
           return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
