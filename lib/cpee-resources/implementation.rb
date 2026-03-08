@@ -87,6 +87,79 @@ module CPEE
         end
       end
     end #}}}
+    class DoCreate < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        dir = File.join(data,'endpoints',Riddl::Protocols::Utils::escape(@r[-1]))
+        if Dir.exist?(dir)
+          @status = 409
+          return Riddl::Parameter::Complex.new('error','text/plain','Endpoint already exists.')
+        end
+        FileUtils.mkdir_p(dir)
+        File.symlink(File.join(data,'symbols','timeout.svg'),  File.join(dir,'symbol.svg'))
+        File.symlink(File.join(data,'schemas','timeout.rng'),  File.join(dir,'schema.rng'))
+        @status = 201
+        Riddl::Parameter::Complex.new('created','text/xml','<resource/>')
+      end
+    end #}}}
+    class DoUpdateSymlink < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        # @a[2] is the subfolder: 'symbols' or 'schemas'
+        # @a[3] is the link filename: 'symbol.svg' or 'schema.rng'
+        endpoint_dir = File.join(data,'endpoints',Riddl::Protocols::Utils::escape(@r[-2]))
+        payload = @p.find { |p| p.name == 'data' }
+        if payload.nil?
+          @status = 400
+          return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
+        end
+        target_name = Riddl::Protocols::Utils::escape(payload.value.strip)
+        target_file = File.join(data,@a[2],target_name)
+        if !File.exist?(target_file)
+          @status = 404
+          return Riddl::Parameter::Complex.new('error','text/plain',"Target #{target_name} not found in #{@a[2]}.")
+        end
+        link_path = File.join(endpoint_dir,@a[3])
+        File.delete(link_path) if File.exist?(link_path) || File.symlink?(link_path)
+        File.symlink(target_file, link_path)
+        Riddl::Parameter::Complex.new('updated','text/plain','OK')
+      end
+    end #}}}
+    class DoCreateFile < Riddl::Implementation #{{{
+      def response
+        data = @a[0]
+        file = File.join(data, @a[1], Riddl::Protocols::Utils::escape(@r[-1]))
+        if File.exist?(file)
+          @status = 409
+          return Riddl::Parameter::Complex.new('error','text/plain','File already exists.')
+        end
+        payload = @p.find { |p| p.name == 'data' }
+        if payload.nil?
+          @status = 400
+          return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
+        end
+        File.write(file, payload.value)
+        @status = 201
+        Riddl::Parameter::Complex.new('created','text/plain','OK')
+      end
+    end #}}}
+    class DoUpdateFile < Riddl::Implementation #{{{
+      def response
+        data = @a[0]
+        file = File.join(data, @a[1], Riddl::Protocols::Utils::escape(@r[-1]))
+        if !File.exist?(file)
+          @status = 404
+          return Riddl::Parameter::Complex.new('error','text/plain','Existence really is an imperfect tense that never becomes a present. (Friedrich Nietzsche)')
+        end
+        payload = @p.find { |p| p.name == 'data' }
+        if payload.nil?
+          @status = 400
+          return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
+        end
+        File.write(file, payload.value)
+        Riddl::Parameter::Complex.new('updated','text/plain','OK')
+      end
+    end #}}}
 
     def self::implementation(opts)
       opts[:data_dir]           ||= File.expand_path(File.join(__dir__,'data'))
@@ -117,16 +190,35 @@ module CPEE
           on resource 'endpoints' do
             run DoList, 'endpoints', opts[:data_dir] if get
             on resource do
-              run DoExists, 'endpoints', opts[:data_dir] if get
+              run DoExists,  'endpoints', opts[:data_dir] if get
+              run DoCreate,  'endpoints', opts[:data_dir] if post
               on resource 'symbol.svg' do
-                run DoFile, 'endpoints', opts[:data_dir], (-2..-1), 'svg', 'image/svg+xml'  if get
+                run DoFile,          'endpoints', opts[:data_dir], (-2..-1), 'svg', 'image/svg+xml' if get
+                run DoUpdateSymlink, opts[:data_dir], 'symbols', 'symbol.svg'                       if put
               end
               on resource 'schema.rng' do
-                run DoFile, 'endpoints', opts[:data_dir], (-2..-1), 'rng', 'text/xml' if get
+                run DoFile,          'endpoints', opts[:data_dir], (-2..-1), 'rng', 'text/xml' if get
+                run DoUpdateSymlink, opts[:data_dir], 'schemas', 'schema.rng'                   if put
               end
               on resource 'properties.json' do
                 run DoFile, 'endpoints', opts[:data_dir], (-2..-1), 'json', 'application/json' if get
               end
+            end
+          end
+          on resource 'symbols' do
+            run DoList, 'symbols', opts[:data_dir] if get
+            on resource do
+              run DoFile,       'symbols', opts[:data_dir], (-1..-1), 'svg', 'image/svg+xml' if get
+              run DoCreateFile, opts[:data_dir], 'symbols'                                   if post
+              run DoUpdateFile, opts[:data_dir], 'symbols'                                   if put
+            end
+          end
+          on resource 'schemas' do
+            run DoList, 'schemas', opts[:data_dir] if get
+            on resource do
+              run DoFile,       'schemas', opts[:data_dir], (-1..-1), 'rng', 'text/xml' if get
+              run DoCreateFile, opts[:data_dir], 'schemas'                               if post
+              run DoUpdateFile, opts[:data_dir], 'schemas'                               if put
             end
           end
         end
