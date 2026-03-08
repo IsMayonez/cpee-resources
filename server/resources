@@ -17,6 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 require 'rubygems'
+$LOAD_PATH.unshift File.join(__dir__, '..', 'lib')
 require 'cpee-resources/implementation'
 
 options = {

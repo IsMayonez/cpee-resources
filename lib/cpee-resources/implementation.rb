@@ -64,7 +64,6 @@ module CPEE
     class DoFile < Riddl::Implementation #{{{
       def response
         data = @a[1]
-        $stderr.puts "DEBUG @r=#{@r.inspect} @a=#{@a.inspect}"
         file = File.join(data,@a[0],*(@r[@a[2]].map{|e| Riddl::Protocols::Utils::escape(e)}))
         if File.exist?(file)
           Riddl::Parameter::Complex.new(@a[3],@a[4],File.read(file))
