@@ -214,6 +214,7 @@ module CPEE
       opts[:data_dir]           ||= File.expand_path(File.join(__dir__,'data'))
 
       Proc.new do
+        @env['PATH_INFO'] = @env['REQUEST_URI'].split('?',2).first if @env&.key?('REQUEST_URI')
         on resource do
           on resource 'modifiers' do
             run DoList, 'modifiers', opts[:data_dir] if get
