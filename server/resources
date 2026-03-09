@@ -20,6 +20,18 @@ require 'rubygems'
 $LOAD_PATH.unshift File.join(__dir__, '..', 'lib')
 require 'cpee-resources/implementation'
 
+class PreserveEncodedPath
+  def initialize(app)
+    @app = app
+  end
+  def call(env)
+    if env['REQUEST_URI']
+      env['PATH_INFO'] = env['REQUEST_URI'].split('?', 2).first
+    end
+    @app.call(env)
+  end
+end
+
 options = {
   :host => 'localhost',
   :port => 9303,
@@ -29,6 +41,7 @@ options = {
 Riddl::Server.new(CPEE::Resources::SERVER, options) do
   accessible_description true
   cross_site_xhr true
+  use PreserveEncodedPath
 
   @riddl_opts[:data_dir] ||= File.join(__dir__,'data')
 
