@@ -133,6 +133,9 @@
   <message name="updated">
     <parameter name="updated" mimetype="text/plain"/>
   </message>
+  <message name="deleted">
+    <parameter name="deleted" mimetype="text/plain"/>
+  </message>
   <message name="error">
     <parameter name="error" mimetype="text/plain"/>
   </message>
@@ -171,16 +174,18 @@
       <resource>
         <get out="exists"/>
         <post out="created"/>
+        <delete out="deleted"/>
         <resource relative="symbol.svg">
           <get out="symbol"/>
-          <put in="filedata" out="updated"/>
+          <put out="updated"/>
         </resource>
         <resource relative="schema.rng">
           <get out="schema"/>
-          <put in="filedata" out="updated"/>
+          <put out="updated"/>
         </resource>
         <resource relative="properties.json">
           <get out="json"/>
+          <put out="updated"/>
         </resource>
       </resource>
     </resource>
@@ -190,6 +195,7 @@
         <get out="symbol"/>
         <post out="created"/>
         <put out="updated"/>
+        <delete out="deleted"/>
       </resource>
     </resource>
     <resource relative='schemas'>
@@ -198,6 +204,7 @@
         <get out="schema"/>
         <post out="created"/>
         <put out="updated"/>
+        <delete out="deleted"/>
       </resource>
     </resource>
   </resource>

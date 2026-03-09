@@ -104,24 +104,69 @@ module CPEE
     end #}}}
     class DoUpdateSymlink < Riddl::Implementation #{{{
       def response
-        data = @a[1]
-        # @a[2] is the subfolder: 'symbols' or 'schemas'
-        # @a[3] is the link filename: 'symbol.svg' or 'schema.rng'
+        data = @a[0]
+        # @a[1] is the subfolder: 'symbols' or 'schemas'
+        # @a[2] is the link filename: 'symbol.svg' or 'schema.rng'
         endpoint_dir = File.join(data,'endpoints',Riddl::Protocols::Utils::escape(@r[-2]))
-        payload = @p.find { |p| p.name == 'data' }
+        payload = @p.find { |p| p.name == 'data' } || @p[0]
         if payload.nil?
           @status = 400
           return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
         end
-        target_name = Riddl::Protocols::Utils::escape(payload.value.strip)
-        target_file = File.join(data,@a[2],target_name)
+        value = payload.value
+        value = value.read if value.respond_to?(:read)
+        target_name = Riddl::Protocols::Utils::escape(value.strip)
+        target_file = File.join(data,@a[1],target_name)
         if !File.exist?(target_file)
           @status = 404
-          return Riddl::Parameter::Complex.new('error','text/plain',"Target #{target_name} not found in #{@a[2]}.")
+          return Riddl::Parameter::Complex.new('error','text/plain',"Target #{target_name} not found in #{@a[1]}.")
         end
-        link_path = File.join(endpoint_dir,@a[3])
+        link_path = File.join(endpoint_dir,@a[2])
         File.delete(link_path) if File.exist?(link_path) || File.symlink?(link_path)
         File.symlink(target_file, link_path)
+        Riddl::Parameter::Complex.new('updated','text/plain','OK')
+      end
+    end #}}}
+    class DoDelete < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        dir = File.join(data,@a[0],Riddl::Protocols::Utils::escape(@r[-1]))
+        unless Dir.exist?(dir)
+          @status = 404
+          return Riddl::Parameter::Complex.new('error','text/plain','Existence really is an imperfect tense that never becomes a present. (Friedrich Nietzsche)')
+        end
+        Dir.entries(dir).each do |f|
+          next if f == '.' || f == '..'
+          File.delete(File.join(dir,f))
+        end
+        Dir.rmdir(dir)
+        Riddl::Parameter::Complex.new('deleted','text/plain','OK')
+      end
+    end #}}}
+    class DoDeleteFile < Riddl::Implementation #{{{
+      def response
+        data = @a[0]
+        file = File.join(data,@a[1],Riddl::Protocols::Utils::escape(@r[-1]))
+        unless File.exist?(file) || File.symlink?(file)
+          @status = 404
+          return Riddl::Parameter::Complex.new('error','text/plain','Existence really is an imperfect tense that never becomes a present. (Friedrich Nietzsche)')
+        end
+        File.delete(file)
+        Riddl::Parameter::Complex.new('deleted','text/plain','OK')
+      end
+    end #}}}
+    class DoWriteFile < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        file = File.join(data,@a[0],*(@r[@a[2]].map{|e| Riddl::Protocols::Utils::escape(e)}))
+        payload = @p.find { |p| p.name == 'data' } || @p[0]
+        if payload.nil?
+          @status = 400
+          return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
+        end
+        content = payload.value
+        content = content.read if content.respond_to?(:read)
+        File.write(file, content)
         Riddl::Parameter::Complex.new('updated','text/plain','OK')
       end
     end #}}}
@@ -196,6 +241,7 @@ module CPEE
             on resource do
               run DoExists,  'endpoints', opts[:data_dir] if get
               run DoCreate,  'endpoints', opts[:data_dir] if post
+              run DoDelete,  'endpoints', opts[:data_dir] if delete
               on resource 'symbol.svg' do
                 run DoFile,          'endpoints', opts[:data_dir], (-2..-1), 'svg', 'image/svg+xml' if get
                 run DoUpdateSymlink, opts[:data_dir], 'symbols', 'symbol.svg'                       if put
@@ -205,7 +251,8 @@ module CPEE
                 run DoUpdateSymlink, opts[:data_dir], 'schemas', 'schema.rng'                   if put
               end
               on resource 'properties.json' do
-                run DoFile, 'endpoints', opts[:data_dir], (-2..-1), 'json', 'application/json' if get
+                run DoFile,      'endpoints', opts[:data_dir], (-2..-1), 'json', 'application/json' if get
+                run DoWriteFile, 'endpoints', opts[:data_dir], (-2..-1)                             if put
               end
             end
           end
@@ -215,6 +262,7 @@ module CPEE
               run DoFile,       'symbols', opts[:data_dir], (-1..-1), 'svg', 'image/svg+xml' if get
               run DoCreateFile, opts[:data_dir], 'symbols'                                   if post
               run DoUpdateFile, opts[:data_dir], 'symbols'                                   if put
+              run DoDeleteFile, opts[:data_dir], 'symbols'                                   if delete
             end
           end
           on resource 'schemas' do
@@ -223,6 +271,7 @@ module CPEE
               run DoFile,       'schemas', opts[:data_dir], (-1..-1), 'rng', 'text/xml' if get
               run DoCreateFile, opts[:data_dir], 'schemas'                               if post
               run DoUpdateFile, opts[:data_dir], 'schemas'                               if put
+              run DoDeleteFile, opts[:data_dir], 'schemas'                               if delete
             end
           end
         end
