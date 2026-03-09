@@ -177,11 +177,11 @@
         <delete out="deleted"/>
         <resource relative="symbol.svg">
           <get out="symbol"/>
-          <put in="filedata" out="updated"/>
+          <put out="updated"/>
         </resource>
         <resource relative="schema.rng">
           <get out="schema"/>
-          <put in="filedata" out="updated"/>
+          <put out="updated"/>
         </resource>
         <resource relative="properties.json">
           <get out="json"/>
