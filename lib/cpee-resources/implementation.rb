@@ -115,7 +115,7 @@ module CPEE
         end
         value = payload.value
         value = value.read if value.respond_to?(:read)
-        target_name = Riddl::Protocols::Utils::escape(value.strip)
+        target_name = value.strip
         target_file = File.join(data,@a[1],target_name)
         if !File.exist?(target_file)
           @status = 404
