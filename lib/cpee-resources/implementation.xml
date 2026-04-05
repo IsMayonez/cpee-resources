@@ -146,6 +146,9 @@
       <parameter name="data" mimetype="text/plain"/>
     </choice>
   </message>
+  <message name="jsondata">
+    <parameter name="data" mimetype="application/json"/>
+  </message>
 
   <resource>
     <resource relative='modifiers'> <!--{{{-->
@@ -185,7 +188,9 @@
         </resource>
         <resource relative="properties.json">
           <get out="json"/>
-          <put out="updated"/>
+          <post in="jsondata" out="created"/>
+          <put in="jsondata" out="updated"/>
+          <delete out="deleted"/>
         </resource>
       </resource>
     </resource>

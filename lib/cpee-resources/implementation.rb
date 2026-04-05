@@ -155,6 +155,38 @@ module CPEE
         Riddl::Parameter::Complex.new('deleted','text/plain','OK')
       end
     end #}}}
+    class DoCreateProperties < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        file = File.join(data,@a[0],*(@r[@a[2]].map{|e| Riddl::Protocols::Utils::escape(e)}))
+        if File.exist?(file)
+          @status = 409
+          return Riddl::Parameter::Complex.new('error','text/plain','File already exists.')
+        end
+        payload = @p.find { |p| p.name == 'data' } || @p[0]
+        if payload.nil?
+          @status = 400
+          return Riddl::Parameter::Complex.new('error','text/plain','Missing "data" parameter.')
+        end
+        content = payload.value
+        content = content.read if content.respond_to?(:read)
+        File.write(file, content)
+        @status = 201
+        Riddl::Parameter::Complex.new('created','text/xml','<created/>')
+      end
+    end #}}}
+    class DoDeleteProperties < Riddl::Implementation #{{{
+      def response
+        data = @a[1]
+        file = File.join(data,@a[0],*(@r[@a[2]].map{|e| Riddl::Protocols::Utils::escape(e)}))
+        unless File.exist?(file) || File.symlink?(file)
+          @status = 404
+          return Riddl::Parameter::Complex.new('error','text/plain','Existence really is an imperfect tense that never becomes a present. (Friedrich Nietzsche)')
+        end
+        File.delete(file)
+        Riddl::Parameter::Complex.new('deleted','text/plain','OK')
+      end
+    end #}}}
     class DoWriteFile < Riddl::Implementation #{{{
       def response
         data = @a[1]
@@ -251,8 +283,10 @@ module CPEE
                 run DoUpdateSymlink, opts[:data_dir], 'schemas', 'schema.rng'                   if put
               end
               on resource 'properties.json' do
-                run DoFile,      'endpoints', opts[:data_dir], (-2..-1), 'json', 'application/json' if get
-                run DoWriteFile, 'endpoints', opts[:data_dir], (-2..-1)                             if put
+                run DoFile,             'endpoints', opts[:data_dir], (-2..-1), 'json', 'application/json' if get
+                run DoCreateProperties, 'endpoints', opts[:data_dir], (-2..-1)                             if post
+                run DoWriteFile,        'endpoints', opts[:data_dir], (-2..-1)                             if put
+                run DoDeleteProperties, 'endpoints', opts[:data_dir], (-2..-1)                             if delete
               end
             end
           end
